@@ -38,6 +38,20 @@ Respond with ONLY valid JSON matching this exact shape. Do not include markdown,
 ${formattingInstruction}`;
 }
 
+export function parsePlanResponse(rawText: string): unknown {
+  const jsonText = rawText
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+
+  try {
+    return JSON.parse(jsonText);
+  } catch {
+    return undefined;
+  }
+}
+
 async function requestPlan(prompt: string): Promise<unknown> {
   const apiKey = process.env.GEMINI_API_KEY;
 
@@ -49,11 +63,7 @@ async function requestPlan(prompt: string): Promise<unknown> {
   const model = client.getGenerativeModel({ model: modelName });
   const result = await model.generateContent(prompt);
 
-  try {
-    return JSON.parse(result.response.text());
-  } catch {
-    return undefined;
-  }
+  return parsePlanResponse(result.response.text());
 }
 
 export async function generatePlan(idea: string): Promise<Plan> {

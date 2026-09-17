@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { parsePlanResponse } from "../lib/ai";
 import { parsePlan } from "../lib/schema";
 
 describe("parsePlan", () => {
@@ -43,5 +44,22 @@ describe("parsePlan", () => {
   it.each(["not a plan", null])("fails gracefully for invalid input: %p", (input) => {
     expect(() => parsePlan(input)).not.toThrow();
     expect(parsePlan(input)).toMatchObject({ success: false });
+  });
+
+  it("parses a valid plan wrapped in json markdown fences", () => {
+    const rawText = `\`\`\`json
+{
+  "title": "Launch a portfolio",
+  "summary": "A practical plan for publishing a portfolio site.",
+  "phases": []
+}
+\`\`\``;
+
+    const result = parsePlan(parsePlanResponse(rawText));
+
+    expect(result).toMatchObject({
+      success: true,
+      data: { title: "Launch a portfolio", phases: [] },
+    });
   });
 });
