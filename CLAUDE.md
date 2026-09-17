@@ -10,7 +10,7 @@ step-by-step execution roadmap.
 
 - Next.js (App Router, TypeScript)
 - Tailwind CSS
-- Anthropic SDK (Claude API)
+- Google Generative AI SDK (Gemini API)
 - Zod for schema validation
 - React Flow for roadmap visualization
 - react-hook-form for forms
@@ -30,4 +30,4 @@ step-by-step execution roadmap.
 - Settings and form UI must use native form elements with associated labels, not button-based custom controls.
 - Explicitly implement every field required by a specification; do not silently omit fields.
 - Do not ship a feature without a corresponding test file in the same commit.
-- Validate AI-generated content from the Claude API against a Zod schema before using it in the UI, and provide a fallback or error state for invalid responses.
+- Validate AI-generated content from the Gemini API against a Zod schema before using it in the UI, and provide a fallback or error state for invalid responses.
