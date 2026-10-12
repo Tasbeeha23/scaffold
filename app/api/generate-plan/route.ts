@@ -1,4 +1,6 @@
-import { generatePlan } from "@/lib/ai";
+import { AIServiceError, generatePlan } from "@/lib/ai";
+import { getClientKey, isRateLimited } from "@/lib/rate-limit";
+import { IdeaSchema } from "@/lib/schema";
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -9,24 +11,29 @@ export async function POST(request: Request) {
     return Response.json({ error: "Request body must be valid JSON" }, { status: 400 });
   }
 
-  const idea =
-    typeof body === "object" && body !== null && "idea" in body
-      ? body.idea
-      : undefined;
-
-  if (typeof idea !== "string" || idea.trim().length === 0) {
+  const input = IdeaSchema.safeParse(body);
+  if (!input.success) {
     return Response.json(
-      { error: "idea must be a non-empty string" },
+      { error: input.error.issues[0]?.message ?? "Invalid request." },
       { status: 400 },
     );
   }
 
+  if (isRateLimited(getClientKey(request))) {
+    return Response.json(
+      { error: "Too many roadmap requests. Please wait a minute and try again." },
+      { status: 429, headers: { "Retry-After": "60" } },
+    );
+  }
+
   try {
-    const plan = await generatePlan(idea.trim());
-    return Response.json(plan);
+    const plan = await generatePlan(input.data.idea);
+    return Response.json(plan, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to generate plan";
-    return Response.json({ error: message }, { status: 500 });
+    const message = error instanceof AIServiceError
+      ? error.message
+      : "Unable to generate a roadmap right now. Please try again.";
+    const status = error instanceof AIServiceError ? error.status : 500;
+    return Response.json({ error: message }, { status });
   }
 }

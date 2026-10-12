@@ -46,6 +46,12 @@ describe("parsePlan", () => {
     expect(parsePlan(input)).toMatchObject({ success: false });
   });
 
+  it("rejects unknown task dependencies and cycles", () => {
+    const baseTask = { title: "Task", description: "A task", estimatedHours: 1 };
+    expect(parsePlan({ title: "Plan", summary: "Summary", phases: [{ id: "phase", title: "Phase", description: "Description", tasks: [{ ...baseTask, id: "a", dependsOn: ["missing"] }] }] }).success).toBe(false);
+    expect(parsePlan({ title: "Plan", summary: "Summary", phases: [{ id: "phase", title: "Phase", description: "Description", tasks: [{ ...baseTask, id: "a", dependsOn: ["b"] }, { ...baseTask, id: "b", dependsOn: ["a"] }] }] }).success).toBe(false);
+  });
+
   it("parses a valid plan wrapped in json markdown fences", () => {
     const rawText = `\`\`\`json
 {
