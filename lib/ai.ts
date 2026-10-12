@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { parsePlan } from "@/lib/schema";
 import type { Plan } from "@/types/plan";
 
-const modelName = process.env.GEMINI_MODEL ?? "gemini-1.5-flash";
+const modelName = process.env.GEMINI_MODEL ?? "gemini-flash-lite-latest";
 const REQUEST_TIMEOUT_MS = 25_000;
 
 export class AIServiceError extends Error {
